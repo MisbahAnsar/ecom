@@ -97,7 +97,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
                   </Typography>
                 </li>
               )}
-              {pages.map(({ icon, name, path }) => (
+              {pages
+                .filter(({ name }) => name !== "Schemes" && name !== "Avail Schemes") 
+                .map(({ icon, name, path }) => (
                 <li key={name}>
                   <NavLink to={`/admindashboard${path}`}>
                     {({ isActive }) => (

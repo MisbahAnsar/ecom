@@ -319,7 +319,7 @@ const AddProduct = () => {
           </div>
           <div className="mb-4">
             <label htmlFor="mainImage" className="block text-sm font-medium mb-1">Main Image<span className="text-red-500">*</span></label>
-            <input required type='file' accept='image/*' onChange={handleMainImageChange} />
+            <input type='file' accept='image/*' onChange={handleMainImageChange} />
           </div>
           <div className='mb-4'>
             <label htmlFor='additionalImages' className='block text-sm font-medium mb-1'>Additional Images</label>

@@ -134,7 +134,7 @@ const UserDetailModal = ({ user, onClose }) => {
                         <span className="text-gray-800">{user.shopAddress}</span>
                     </div>
 
-                    {/* Aadhar */}
+                    Aadhar
                     <div className="flex bg-gray-100 p-3 rounded-md shadow-sm">
                         <span className="font-medium text-gray-600 mr-4">Aadhar:</span>
                         <span className="text-gray-800">{user.aadharNumber}</span>

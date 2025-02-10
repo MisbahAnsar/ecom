@@ -40,7 +40,7 @@ const productSchema = new mongoose.Schema({
     default: "available",
   },
   sku: { type: String },
-  mainImage: { type: String },
+  mainImage: { type: String, required: false },
   additionalImages: { type: [String] },
   mainCategory: { type: [String] },
   subCategory: { type: [String] },

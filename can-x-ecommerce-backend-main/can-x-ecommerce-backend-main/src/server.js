@@ -36,29 +36,39 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://canx.vercel.app", // Allow only frontend URL
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // Allow credentials (important for cookies/sessions)
+    origin: [
+      // "https://canx.vercel.app",
+      "http://localhost:5173",
+      // "https://api.satpurabio.com",
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
   })
 );
 
-app.options("*", cors()); // Handle preflight requests globally
+// app.use(
+//   cors({
+//     origin: "https://canx.vercel.app", // Allow only frontend URL
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true, // Allow credentials (important for cookies/sessions)
+//   })
+// );
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://canx.vercel.app");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+// app.options("*", cors()); // Handle preflight requests globally
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "https://canx.vercel.app");
+//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  next();
-});
+//   if (req.method === "OPTIONS") {
+//     return res.sendStatus(204);
+//   }
 
-
+//   next();
+// });
 app.get('/', (req, res) => {
   res.send('Hello, Satpura Backend!');
 });

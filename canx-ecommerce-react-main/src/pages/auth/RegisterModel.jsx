@@ -312,7 +312,6 @@ const RegistrationModal = ({ isOpen, onClose, onSuccess }) => {
                                 onChange={handleFileChange}
                                 className="w-full p-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                 accept="image/*,.pdf"
-                                required
                             />
                         </div>
                         <div>
@@ -323,7 +322,6 @@ const RegistrationModal = ({ isOpen, onClose, onSuccess }) => {
                                 onChange={handleFileChange}
                                 className="w-full p-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                 accept="image/*,.pdf"
-                                required
                             />
                         </div>
                     </div>
@@ -337,7 +335,6 @@ const RegistrationModal = ({ isOpen, onClose, onSuccess }) => {
                                 onChange={handleFileChange}
                                 className="w-full p-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                 accept="image/*,.pdf"
-
                             />
                         </div>
                         <div>
@@ -348,7 +345,6 @@ const RegistrationModal = ({ isOpen, onClose, onSuccess }) => {
                                 onChange={handleFileChange}
                                 className="w-full p-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                 accept="image/*,.pdf"
-
                             />
                         </div>
                     </div>
@@ -361,7 +357,6 @@ const RegistrationModal = ({ isOpen, onClose, onSuccess }) => {
                             onChange={handleFileChange}
                             className="w-full p-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             accept="image/*,.pdf"
-
                         />
                     </div>
 
