@@ -40,7 +40,7 @@ const AddProduct = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`https://api.satpurabio.com/admin/category`);
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/admin/category`);
         if (response.status === 200) {
           setCategories(response.data.categories || []);
         } else {
