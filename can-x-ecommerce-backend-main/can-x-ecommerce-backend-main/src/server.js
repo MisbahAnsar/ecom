@@ -39,7 +39,7 @@ app.use(
     origin: [
       "https://canx.vercel.app",
       // "http://localhost:5173",
-      "https://api.satpurabio.com",
+      // "https://api.satpurabio.com",
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
