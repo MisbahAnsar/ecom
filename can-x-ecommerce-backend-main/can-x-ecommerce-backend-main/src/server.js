@@ -37,7 +37,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://ecommerce69.vercel.app",
+      "https://canx.vercel.app",
       "http://localhost:5173",
       "https://api.satpurabio.com",
     ],
