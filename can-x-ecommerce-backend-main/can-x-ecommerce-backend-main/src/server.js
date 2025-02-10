@@ -38,7 +38,7 @@ app.use(
   cors({
     origin: [
       "https://canx.vercel.app",
-      "http://localhost:5173",
+      // "http://localhost:5173",
       "https://api.satpurabio.com",
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
