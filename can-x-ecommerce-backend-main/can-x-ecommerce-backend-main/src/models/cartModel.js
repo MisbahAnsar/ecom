@@ -18,13 +18,13 @@ const cartSchema = new mongoose.Schema({
         ref: "Product.variants",
         required: false, // Optional for products without variants
       },
-      variant: [
+      variant:
         {
           type: { type: String }, // Matches product attribute type
           value: { type: String }, // Matches product attribute value
           price: { type: Number, default: 0 }, // Matches additional price for attribute
+          _id: mongoose.Schema.Types.ObjectId
         },
-      ],
       quantity: {
         type: Number,
         default: 1,

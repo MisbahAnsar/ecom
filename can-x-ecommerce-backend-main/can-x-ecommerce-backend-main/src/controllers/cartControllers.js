@@ -12,17 +12,23 @@ const addToCart = async (req, res) => {
   try {
     // Validate the user
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     // Validate the product
     const existingProduct = await Product.findById(productId);
-    if (!existingProduct) return res.status(404).json({ message: `Product with ID ${productId} not found` });
+    if (!existingProduct) {
+      return res.status(404).json({ message: `Product with ID ${productId} not found` });
+    }
 
     // Get the selected variant if provided
     let selectedVariant = null;
     if (variantId) {
       selectedVariant = existingProduct.variants.find(variant => variant._id.toString() === variantId);
-      if (!selectedVariant) return res.status(404).json({ message: "Variant not found" });
+      if (!selectedVariant) {
+        return res.status(404).json({ message: "Variant not found" });
+      }
     }
 
     // Parse the quantity and ensure it's valid
@@ -43,7 +49,7 @@ const addToCart = async (req, res) => {
         paymentEnd: { $gte: paymentPeriod }
       });
       if (cashDiscount) {
-        discountValue = cashDiscount.discount; // Apply the discount percentage
+        discountValue = cashDiscount.discount;
       }
     }
 
@@ -54,24 +60,24 @@ const addToCart = async (req, res) => {
     });
 
     if (interest) {
-      interestValue = interest.interest; // Apply the interest percentage
+      interestValue = interest.interest;
     }
 
     // Calculate original price (with or without variant)
     const originalPrice = selectedVariant ? selectedVariant.price * parsedQuantity : existingProduct.price * parsedQuantity;
 
     // Calculate discounted price
-    const discountedPrice = originalPrice - (discountValue / 100 * originalPrice); // Apply discount to total
+    const discountedPrice = originalPrice - (discountValue / 100 * originalPrice);
 
     // Calculate interest for delayed payments
     let totalInterest = 0;
     if (interestValue > 0) {
-      const interestStartPeriod = interest.paymentStart; // Assuming this is the start of the interest application
+      const interestStartPeriod = interest.paymentStart;
       const daysDelayed = paymentPeriod - interestStartPeriod;
       const monthsDelayed = Math.ceil(daysDelayed / 30);
 
       if (daysDelayed > 0) {
-        totalInterest = (interestValue / 100) * discountedPrice * monthsDelayed; // Calculate interest for delayed months
+        totalInterest = (interestValue / 100) * discountedPrice * monthsDelayed;
       }
     }
 
@@ -88,7 +94,12 @@ const addToCart = async (req, res) => {
         products: [{
           productId,
           variantId,
-          variant: selectedVariant || null,
+          variant: selectedVariant ? {
+            type: selectedVariant.type,
+            value: selectedVariant.value,
+            price: selectedVariant.price,
+            _id: selectedVariant._id
+          } : null,
           quantity: parsedQuantity,
           discount: discountValue,
           interest: interestValue,
@@ -104,7 +115,11 @@ const addToCart = async (req, res) => {
       });
     } else {
       // Check if the product already exists in the cart
-      const existingProductInCart = cart.products.find(item => item.productId.toString() === productId && item.variantId.toString() === variantId);
+      const existingProductInCart = cart.products.find(item => 
+        item.productId.toString() === productId && 
+        (!variantId || item.variantId?.toString() === variantId)
+      );
+      
       if (existingProductInCart) {
         return res.status(400).json({ message: "Product with this variant already exists in cart" });
       }
@@ -113,7 +128,12 @@ const addToCart = async (req, res) => {
       cart.products.push({
         productId,
         variantId,
-        variant: selectedVariant || null,
+        variant: selectedVariant ? {
+          type: selectedVariant.type,
+          value: selectedVariant.value,
+          price: selectedVariant.price,
+          _id: selectedVariant._id
+        } : null,
         quantity: parsedQuantity,
         discount: discountValue,
         interest: interestValue,
@@ -133,13 +153,25 @@ const addToCart = async (req, res) => {
     // Save the cart
     await cart.save();
 
-    // Respond with cart details
-    res.status(201).json({ message: "Product added to cart successfully", cart });
+    // Populate the cart before sending response
+    const populatedCart = await Cart.findById(cart._id)
+      .populate('userId')
+      .populate({
+        path: 'products.productId',
+        select: 'title description mainImage price'
+      });
+
+    return res.status(201).json({ 
+      message: "Product added to cart successfully", 
+      cart: populatedCart 
+    });
+
   } catch (error) {
     console.error("Error adding product to cart:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 
 const removeFromCart = async (req, res) => {

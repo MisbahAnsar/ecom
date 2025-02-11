@@ -324,19 +324,6 @@ const Products = () => {
   const [dialog, setDialog] = useState(false);
   const [products, setProducts] = useState([]);
 
-  // const fetchProducts = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `${import.meta.env.VITE_SERVER_URL}/auth/getProducts`
-  //     );
-  //     setProducts(response.data);
-  //     setSortedArray1(response.data);
-  //     setSortedArray2(response.data);
-  //     // console.log(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching products:", error);
-  //   }
-  // };
   const getAllProducts = async () => {
     setLoading(true);
     try {
@@ -406,23 +393,6 @@ const Products = () => {
     getAllProducts();
   }, []);
 
-  // const approveVendor = async (user) => {
-  //   // console.log(user);
-  //   setLoading(true);
-  //   try {
-  //     const response = await axios.post(
-  //       `${import.meta.env.VITE_SERVER_URL}/admin/approveVendor`,
-  //       { user }
-  //     );
-  //     getAllProducts();
-  //     // console.log(response.data);
-  //     toast.success(response.data.message);
-  //   } catch (error) {
-  //     console.error("Error approving vendor:", error);
-  //     toast.error("Error approving vendor");
-  //   }
-  //   setLoading(false);
-  // };
 
   const handleDeleteProduct = async (productId) => {
     try {
@@ -531,48 +501,11 @@ const Products = () => {
             />
           ) : (
             <>
-              {/* approvend Products list -------------------------------------------------------------- */}
               <div className=" flex flex-col mt-3 md:mt-7 overflow-x-auto rounded-md dark:bg-white/5 bg-white p-3 md:p-5 ">
-                {/* <p className=" dark:text-gray-400 text-[#363F4D] font-bold plus-jakarta plus-jakarta text-[15px] md:text-[21px] 2xl:text-[23px] ">
-                  Approved Products
-                </p> */}
+               
                 <div className="overflow-x-auto">
                   <div className=" flex flex-col md:flex-row md:items-center justify-between">
                     <div className=" flex flex-col md:flex-row md:items-center gap-3 py-2">
-                      {/* <select
-                value={sortMethod2}
-                onChange={(e) => {
-                  setSortMethod2(e.target.value);
-                }}
-                className=" md:w-[250px] p-2 dark:bg-transparent dark:text-gray-400 text-[#4F5D77] font-semibold bg-[#f2f2f2] text-[12.5px] md:text-[14.4px]"
-              >
-                {sortMethods.map((method, index) => {
-                  return (
-                    <option
-                      key={index}
-                      value={method.value}
-                      className=" text-black"
-                    >
-                      {method.name}
-                    </option>
-                  );
-                })}
-              </select> */}
-                      {/* <select
-                value={filterMethod2}
-                onChange={(e) => {
-                  setFilterMethod2(e.target.value);
-                }}
-                className=" w-full p-2 dark:bg-transparent dark:text-gray-400 text-[#4F5D77] bg-[#f2f2f2] font-semibold text-[12.5px] md:text-[14.4px]"
-              >
-                {filterMethods.map((method, index) => {
-                  return (
-                    <option key={index} value={method.value}>
-                      {method.name}
-                    </option>
-                  );
-                })}
-              </select> */}
                     </div>
                   </div>
                   <table className="w-full border-collapse">
@@ -620,7 +553,7 @@ const Products = () => {
                                 {item.title}
                               </td>
                               <td className="text-center py-2 px-4 text-[13px] md:text-[15px] 2xl:text-[16px] my-2  text-[#FF7004] font-[600] plus-jakarta">
-                                {item.price}
+                                {item?.variants?.length > 0 ? `₹${item.variants[0].price}` : "N/A"}
                               </td>
                               <td className="text-center py-2 px-4 dark:text-gray-400 text-[#495058] my-1 text-[13px] md:text-[15px] 2xl:text-[16px]">
                                 {item?.status}
@@ -651,48 +584,7 @@ const Products = () => {
                                   onChange={() => handleChangeStockStatus(item)}
                                 />
                               </td>
-                              {/* <td> */}
-                              {/* <select
-                          className={`text-center ${
-                            item.status.toLowerCase() === "level 3"
-                              ? "bg-orange-200 text-orange-600"
-                              : item.status.toLowerCase() === "level 1"
-                              ? "bg-red-200 text-red-700"
-                              : item.status.toLowerCase() === "level 2"
-                              ? "bg-green-200 text-green-700"
-                              : "bg-blue-200 text-blue-600"
-                          }
-                          rounded-md py-1 w-full outline-none text-sm font-semibold`}
-                          value={item?.status}
-                          onChange={(e) => {}}
-                        >
-                          <option
-                            className=" bg-white text-black"
-                            value="level 1"
-                          >
-                            level 1
-                          </option>
-                          <option
-                            className=" bg-white text-black"
-                            value="level 3"
-                          >
-                            level 3
-                          </option>
-                          <option
-                            className=" bg-white text-black"
-                            value="level 4"
-                          >
-                            level 4
-                          </option>
-                          <option
-                            className=" bg-white text-black"
-                            value="level 2"
-                          >
-                            level 2
-                          </option>
-                        </select> */}
-                              {/* </td> */}
-                              <td className="  items-center gap-2 py-2 px-4">
+                            <td className="  items-center gap-2 py-2 px-4">
                                 <button
                                   onClick={() => {
                                     setActiveUserData(item);
@@ -703,13 +595,6 @@ const Products = () => {
                                   View
                                 </button>
                               </td>
-                              {/* <td className="  items-center gap-2 py-2 px-4">
-                                <Link to="/admindashboard/newsletter">
-                                  <button className=" px-4 py-2.5 my-1 text-[22px] mx-auto font-medium  text-black  dark:text-white">
-                                    <IoMail />
-                                  </button>
-                                </Link>
-                              </td> */}
                               <td className="  items-center gap-2 py-2 px-4">
                                 <button
                                   onClick={() => {

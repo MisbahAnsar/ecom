@@ -378,8 +378,12 @@ const createOrder = async (req, res) => {
       products: cart.products.map((product) => ({
         product: product.productId,
         quantity: product.quantity,
-        variant: product.variant,
-        cashDiscount: product.discount,
+        variant: product.variant ? {
+          type: product.variant.type,
+          value: product.variant.value,
+          price: product.variant.price,
+          _id: product.variant._id
+        } : null,        cashDiscount: product.discount,
         interest: product.interest,
         dueDate: now.setDate(now.getDate() + product.paymentPeriod).toString(),
         // price: product.finalPrice,
@@ -395,6 +399,7 @@ const createOrder = async (req, res) => {
 
     // Save the order
     await order.save();
+    
 
     if (payment) {
       payment.order = order._id;

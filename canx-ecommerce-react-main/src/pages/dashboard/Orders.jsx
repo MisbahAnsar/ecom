@@ -2,28 +2,28 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const OrderDetailsModal = ({ orderId, onClose }) => {
-  const [orderDetails, setOrderDetails] = useState(null)
-  const [error, setError] = useState("")
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!orderId) return; // Ensure orderId exists before fetching
+
     const fetchOrderDetails = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/admin/orders/${orderId}`)
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/admin/orders/${orderId}`);
         if (response.data.success) {
-          setOrderDetails(response.data.data)
+          setOrderDetails(response.data.data);
         } else {
-          setError("Failed to fetch order details.")
+          setError("Failed to fetch order details.");
         }
       } catch (err) {
-        setError("Failed to fetch order details.")
+        console.error("Error fetching order details:", err);
+        setError("Failed to fetch order details.");
       }
-    }
-    fetchOrderDetails()
-  }, [orderId])
+    };
 
-  const handleClose = () => {
-    onClose()
-  }
+    fetchOrderDetails();
+  }, [orderId]);
 
   if (!orderDetails) {
     return (
@@ -32,39 +32,26 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
           <p className="text-xl font-semibold text-gray-700">Loading...</p>
         </div>
       </div>
-    )
-  }
-
-  const parseVariant = (variantString) => {
-    try {
-      const cleanString = variantString.replace(/\n/g, "").replace(/\s+/g, " ").trim()
-      const variantObject = JSON.parse(cleanString.replace(/'/g, '"'))
-      return variantObject
-    } catch (error) {
-      console.error("Error parsing variant:", error)
-      return null
-    }
+    );
   }
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
         <button
-          onClick={handleClose}
+          onClick={onClose}
           className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+          aria-label="Close modal"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+
         <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">Order Details</h2>
+
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <p className="text-gray-700">
@@ -72,15 +59,11 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
             </p>
             <p className="text-gray-700">
               <span className="font-semibold">Status:</span>{" "}
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                {orderDetails.orderStatus}
-              </span>
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">{orderDetails.orderStatus}</span>
             </p>
             <p className="text-gray-700">
               <span className="font-semibold">Payment Status:</span>{" "}
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                {orderDetails.paymentStatus}
-              </span>
+              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">{orderDetails.paymentStatus}</span>
             </p>
             <p className="text-gray-700">
               <span className="font-semibold">Order Type:</span> {orderDetails.orderType}
@@ -94,62 +77,60 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
             <p className="text-gray-700">
               <span className="font-semibold">Amount Remaining:</span> ₹{orderDetails.amountRemaining}
             </p>
-            <p className="text-gray-700">
-              <span className="font-semibold">Delivery Date:</span>{" "}
-              {new Date(orderDetails.deliveryDate).toLocaleDateString()}
-            </p>
-            <p className="text-gray-700">
-              <span className="font-semibold">Due Date:</span>{" "}
-              {new Date(orderDetails.products[0].dueDate).toLocaleDateString()}
-            </p>
+
+            {orderDetails.deliveryDate && (
+              <p className="text-gray-700">
+                <span className="font-semibold">Delivery Date:</span>{" "}
+                {new Date(orderDetails.deliveryDate).toLocaleDateString()}
+              </p>
+            )}
           </div>
 
           <h3 className="text-2xl font-semibold mt-8 mb-4 text-gray-800">Products</h3>
-          {orderDetails.products.map((product) => (
-            <div
-              key={product._id}
-              className="border rounded-lg p-6 my-4 shadow-md hover:shadow-lg transition-shadow duration-300"
-            >
-              <p className="text-xl font-semibold text-gray-800 mb-2">Product name: {product.product.title}</p>
+          {orderDetails.products.map((product, index) => {
+            const productData = product._doc || product; // Handle nested structure
+            const variant = productData.variant || {}; // Ensure variant is accessed properly
 
-              <div className="bg-gray-100 p-4 rounded-md mt-2">
-                {product.product.variants.length > 0 ? (
-                  <>
-                    <p className="font-semibold text-gray-700 mb-2 ">Attributes :</p>
-                    {product.variant.map((variant, index) => (
-                      <p key={index} className="ml-4 text-gray-600 tracking-widest">
-                        • {variant}
-                      </p>
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-gray-600">
-                    <span className="font-semibold">Attribute:</span> No Attribute selected
+            return (
+              <div key={index} className="border rounded-lg p-6 my-4 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <p className="text-xl font-semibold text-gray-800 mb-2">Product Name: {productData.product?.title || "N/A"}</p>
+
+                <div className="bg-gray-100 p-4 rounded-md mt-2">
+                  {variant.type && variant.value ? (
+                    <>
+                      <p className="font-semibold text-gray-700 mb-2">Attributes:</p>
+                      <p className="ml-4 text-gray-600 tracking-widest">• {variant.type}: {variant.value}</p>
+                      <p className="ml-4 text-gray-600 tracking-widest">• Price: ₹{variant.price}</p>
+                    </>
+                  ) : (
+                    <p className="text-gray-600">
+                      <span className="font-semibold">Attributes:</span> No attributes selected
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  <p className="text-gray-700">
+                    <span className="font-semibold">Quantity:</span> {productData.quantity}
                   </p>
-                )}
+                  <p className="text-gray-700">
+                    <span className="font-semibold">Discount:</span> ₹{productData.cashDiscount}
+                  </p>
+                  <p className="text-gray-700">
+                    <span className="font-semibold">Interest:</span> ₹{productData.interest}
+                  </p>
+                  <p className="text-gray-700">
+                    <span className="font-semibold">Due Amount:</span> ₹{productData.dueAmount}
+                  </p>
+                </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                <p className="text-gray-700">
-                  <span className="font-semibold">Quantity:</span> {product.quantity}
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-semibold">Discount:</span> ₹{product.cashDiscount}
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-semibold">Interest:</span> ₹{product.interest}
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-semibold">Due Amount:</span> ₹{product.dueAmount}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 
 const EditOrderModal = ({ orderId, orderData, onClose, onSave }) => {

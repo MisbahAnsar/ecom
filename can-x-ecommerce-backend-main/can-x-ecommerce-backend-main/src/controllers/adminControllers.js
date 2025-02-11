@@ -1216,7 +1216,7 @@ const setUserCreditLimit = async (req, res) => {
 
 const updateOrderDetails = async (req, res) => {
   try {
-    const orderId = req.params.id; // Get the orderId from the request parameters
+    const orderId = req.params.id;
     const {
       productId, 
       variantId, 
@@ -1227,21 +1227,20 @@ const updateOrderDetails = async (req, res) => {
       orderStatus,
       deliveryDate,
       amountPaid
-    } = req.body; // Get other fields from request body
+    } = req.body;
 
-    // Validate if the necessary fields are provided
     if (!productId || !variantId) {
       return res.status(400).json({ message: 'Product ID and Variant ID are required' });
     }
 
-    // Find the order by its ID
+    // Find and populate the order with all necessary references
     const order = await Order.findById(orderId)
       .populate({
-        path: 'products.product', // Populate the product details
-        populate: {
-          path: 'variants', // Populate the variants for each product
-        },
+        path: 'products.product',
+        select: 'title description mainImage variants'
       })
+      .populate('address')
+      .populate('paymentHistory')
       .exec();
 
     if (!order) {
@@ -1254,7 +1253,7 @@ const updateOrderDetails = async (req, res) => {
       return res.status(404).json({ message: 'Product not found in this order' });
     }
 
-    // Check if the selected variant exists in the product's variants
+    // Find the variant in the product
     const selectedVariant = product.product.variants.find(
       (variant) => variant._id.toString() === variantId
     );
@@ -1262,101 +1261,100 @@ const updateOrderDetails = async (req, res) => {
       return res.status(404).json({ message: 'Variant not found for the selected product' });
     }
 
-    // Update the variant for the product in the order
-    product.variant = selectedVariant;
+    // Update the variant information
+    product.variant = {
+      type: selectedVariant.type,
+      value: selectedVariant.value,
+      price: selectedVariant.price,
+      _id: selectedVariant._id
+    };
 
-    // Recalculate the product price based on the selected variant
-    product.price = selectedVariant.price;
-    product.dueAmount = product.price * product.quantity;
+    // Update prices and amounts
+    product.dueAmount = selectedVariant.price * product.quantity;
 
-    // Recalculate the total amount for the order
-    let newTotalAmount = 0;
-    order.products.forEach((prod) => {
-      newTotalAmount += prod.price * prod.quantity;
-    });
+    // Recalculate total amount
+    const newTotalAmount = order.products.reduce((total, prod) => {
+      return total + (prod.variant.price * prod.quantity);
+    }, 0);
 
-    order.totalAmount = newTotalAmount;
-    order.amountRemaining = order.totalAmount - order.amountPaid;
-
-    // Update other editable fields
+    // Update order fields
     if (orderType) order.orderType = orderType;
     if (cashDiscount !== undefined) order.cashDiscount = cashDiscount;
     if (interest !== undefined) order.interest = interest;
     if (paymentStatus) order.paymentStatus = paymentStatus;
     if (orderStatus) order.orderStatus = orderStatus;
     if (deliveryDate) order.deliveryDate = new Date(deliveryDate);
+    
+    order.totalAmount = newTotalAmount;
+    
     if (amountPaid !== undefined) {
       order.amountPaid = amountPaid;
-      order.amountRemaining = order.totalAmount - amountPaid;  // Update amount remaining
+      order.amountRemaining = newTotalAmount - amountPaid;
     }
 
-    // Save the updated order
     await order.save();
+
+    // Fetch the updated order with populated fields
+    const updatedOrder = await Order.findById(orderId)
+      .populate({
+        path: 'products.product',
+        select: 'title description mainImage variants'
+      })
+      .populate('address')
+      .populate('paymentHistory')
+      .exec();
 
     return res.status(200).json({
       success: true,
       message: 'Order details updated successfully',
-      data: {
-        _id: order._id,
-        orderId: order.orderId,
-        customer: order.customer,
-        orderType: order.orderType,
-        products: order.products.map(prod => ({
-          product: prod.product,
-          quantity: prod.quantity,
-          variant: prod.variant,
-          price: prod.price,
-          dueAmount: prod.dueAmount,
-          cashDiscount: prod.cashDiscount,
-          interest: prod.interest,
-          dueDate: prod.dueDate,
-        })),
-        address: order.address,
-        cashDiscount: order.cashDiscount,
-        interest: order.interest,
-        totalAmount: order.totalAmount,
-        amountPaid: order.amountPaid,
-        amountRemaining: order.amountRemaining,
-        paymentHistory: order.paymentHistory,
-        orderStatus: order.orderStatus,
-        paymentStatus: order.paymentStatus,
-        deliveryDate: order.deliveryDate,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt,
-      },
+      data: updatedOrder
     });
+
   } catch (error) {
+    console.error('Error updating order:', error);
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 const getOrderDetails = async (req, res) => {
   try {
-    const orderId = req.params.id; // Get the orderId from the request parameters
-    console.log(orderId);
-    // Find the order by its ID
+    const orderId = req.params.id;
+
     const order = await Order.findById(orderId)
       .populate({
-        path: 'products.product', // Populate the product details
-        populate: {
-          path: 'variants', // Populate the variants for each product
-        },
+        path: 'products.product',
+        select: 'title description mainImage variants'
       })
-      .exec(); // Using exec to ensure a proper promise is returned
+      .populate('address')
+      .populate('paymentHistory')
+      .populate('customer', 'name email phone')
+      .exec();
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Log the order to check if it's populated correctly
-    console.log("Populated Order:", JSON.stringify(order, null, 2));
+    // Transform the response to ensure variant information is properly structured
+    const transformedOrder = {
+      ...order.toObject(),
+      products: order.products.map(product => ({
+        ...product,
+        variant: product.variant ? {
+          type: product.variant.type,
+          value: product.variant.value,
+          price: product.variant.price,
+          _id: product.variant._id
+        } : null
+      }))
+    };
 
     return res.status(200).json({
       success: true,
       message: 'Order details fetched successfully',
-      data: order,
+      data: transformedOrder
     });
   } catch (error) {
+    console.error('Error fetching order:', error);
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
